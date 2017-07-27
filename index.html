@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="socket.io/socket.io.js"></script>
+    <style>
+    *{padding:0px;
+        margin:0px;}
+        ul{
+            list-style:none;
+            height:400px;
+            border:1px solid;
+            overflow: auto;
+        }
+        li{
+            background:#ddd;
+            border:1px solid grey;
+            margin:5px;
+        }
+        h3{
+          color:red;  
+        }
+    
+    </style>
+</head>
+<body>
+   <ul id="message">
+       
+    </ul>
+    <div>
+         输入内容：<textarea name="" id="" cols="30" rows="10" class="inp"></textarea>
+
+       输入姓名：<input type="text" class="inp" disabled="" autofocus placeholder="点击我修改姓名">
+       <button>修改姓名</button>
+       <button>发送</button>
+   </div>
+    
+    <script>
+    var ul=document.getElementById('message')
+    var btn=document.getElementsByTagName('button')
+    var inp=document.getElementsByClassName("inp")
+    let username=""
+    if(localStorage.getItem("name")==undefined){
+        localStorage.setItem("name","菜鸟")
+        username=localStorage.getItem("name")
+    }else{
+        username=localStorage.getItem("name")
+    }
+    var flag=1
+
+    btn[0].onclick=function(){
+        if(flag==0){
+          localStorage.setItem("name",inp[1].value)
+          username=inp[1].value 
+          inp[1].setAttribute("disabled","")
+          flag=1
+          alert("修改成功")
+        }else{
+            inp[1].removeAttribute("disabled")
+            inp[1].focus()
+            flag=0
+        }
+        
+    }
+
+        socket = io.connect('ws://172.16.138.17:3000');
+          btn[1].onclick=function(){
+               socket.emit("message", { "msg" : inp[0].value,"name":username});  
+            }
+        // socket.emit("message", { "msg" : btn.value});
+        socket.on("message", function(obj) {
+         
+            console.log(obj)
+            obj=obj[obj.length-1]
+                if(obj.name=="曹士远"){
+                    alert("我是你爹")
+                }else{
+                 var li=document.createElement("li")
+                 var h3=document.createElement("h3")
+                 var p=document.createElement("p")
+                 var div=document.createElement("div")
+                 div.innerHTML=obj.time1
+                 h3.innerHTML=obj.name
+                 p.innerHTML=obj.msg
+                 li.appendChild(h3)
+                 li.appendChild(p)
+                 li.appendChild(div)
+                 ul.appendChild(li)
+                }
+               
+           // alert(ul.children[ul.children.length-1].offsetTop)
+           ul.scrollTop=ul.children[ul.children.length-1].offsetTop
+        });
+
+      var XMLHttp=new XMLHttpRequest()
+      // alert(XMLHttp)
+    XMLHttp.open("get","/data",true)
+    XMLHttp.onreadystatechange=function(){
+        if(XMLHttp.readyState==4&&XMLHttp.status==200){
+            var obj=JSON.parse(XMLHttp.responseText)
+             ul.innerHTML=""
+            for (var i = 0; i < obj.length; i++) {
+                 var li=document.createElement("li")
+                 var h3=document.createElement("h3")
+                 var p=document.createElement("p")
+                 var div=document.createElement("div")
+                 div.innerHTML=obj[i].time1
+                 h3.innerHTML=obj[i].name
+                 p.innerHTML=obj[i].msg
+                 li.appendChild(h3)
+                 li.appendChild(p)
+                 li.appendChild(div)
+                 ul.appendChild(li)
+            };
+        ul.scrollTop=ul.children[ul.children.length-1].offsetTop
+
+         };
+        }
+    
+    XMLHttp.send()
+    </script>
+</body>
+</html>
